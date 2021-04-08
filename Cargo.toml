@@ -1,0 +1,27 @@
+[package]
+name = "nosh"
+version = "0.1.0"
+authors = ["Ryan Zambrotta <rtzamis2@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "nosh"
+path = "src/lib.rs"
+
+# binary to run lib
+[[bin]]
+name = "noshc"
+path = "src/bin/noshc.rs"
+
+[dependencies]
+# llvm deps
+inkwell = { git = "https://github.com/TheDan64/inkwell", branch = "master", features = ["llvm11-0"] }
+# CLI for noshc binary only
+clap = "^2" # CLI
+unicode-xid = "0.2.1" # lexer
+rustyline = "7.1.0" # REPL
+# lazy_static = "1.4.0" # Const value opt
+# logos = "0.11.4" # lexer
+# bimap = "0.6.0" # For symbol table
