@@ -127,6 +127,7 @@ enum LexState{
     // MaybeFloat,
     MaybeComment,
     MaybeColon,
+    MaybeAssign,
     Unknown,
 
     Top,
@@ -172,7 +173,7 @@ fn begin_lex_from_top(chunk: Option<char>) -> LexNext{
             ':' => consume().and_trans(MaybeColon),
             // '|' => consume().and_emit(Token::Pipe),
             '.' => consume().and_emit(Token::Dot),
-            
+            '=' => consume().and_trans(MaybeAssign),
 
             '0'..='9'        => consume().and_trans(Int),
             c if is_sigil(c) => consume().and_trans(Sigil),
@@ -237,6 +238,10 @@ fn lex_next_chunk<'s>(state: LexState, chunk: Option<char>, rest: &'s str) -> Le
         Sigil => match chunk{
             Some(c) if is_sigil(c) => consume().and_continue(),
             _ => reconsume().and_emit(Token::Sigil),
+        }
+        MaybeAssign => match chunk{
+            Some(c) if is_sigil(c) => consume().and_trans(Sigil),
+            _ => reconsume().and_emit(Token::Assigner),
         }
         MaybeColon => match chunk{
             Some(c) if is_sigil(c) => consume().and_trans(Sigil),

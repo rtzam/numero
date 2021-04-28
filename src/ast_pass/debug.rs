@@ -119,12 +119,12 @@ impl<'s> PrinterState<'s>{
     }
 
     fn print_extern(&mut self, e: &FuncProto<'s>){
-        eprint!("- Extern ");
+        eprint!("Extern ");
         self.print_func_proto(e);
     }
 
     fn print_function(&mut self, f: &Function<'s>){
-        eprint!("- ");
+        // eprint!("- ");
         self.print_func_proto(&f.proto);
 
         // self.print_depth();
@@ -191,17 +191,29 @@ impl<'s> PrinterState<'s>{
 
     fn print_if(&mut self, cond: &Expr<'s>, body: &Expr<'s>, else_body: &Expr<'s>){
         eprintln!("If: ");
-        self.dive();
+        
         self.print_depth();
         eprint!("cond: ");
+        self.dive(); 
+        self.print_depth();
         self.print_expr(cond);
+        self.rise();
+
         self.print_depth();
-        eprint!("body: ");
+        eprintln!("body: ");
+        self.dive(); 
+        self.print_depth();
         self.print_expr(body);
+        self.rise();
+
         self.print_depth();
-        eprint!("else: ");
+        eprintln!("else: ");
+        self.dive(); 
+        self.print_depth();
         self.print_expr(else_body);
         self.rise();
+        
+        // self.rise();
     }
 
     fn print_expr_block(&mut self, b: &Vec<Expr<'s>>){

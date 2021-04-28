@@ -37,6 +37,7 @@ pub enum KwKind{
     Do,
     If,
     Else,
+    Val,
     Let,
     In,
     Mut,
@@ -57,6 +58,7 @@ pub enum Token{
     SemiColon,
     // LineEnd(LineEndKind),
     Ident,
+    Assigner,
     Sigil,
     Dot,
     // TypeArrow,  // ->
@@ -125,7 +127,7 @@ impl TokenLoc{
     pub fn next_line(&self) -> Self{
         TokenLoc{
             line: self.line + 1,
-            column: 0,
+            column: 1,
         }
     }
 

@@ -9,7 +9,6 @@ pub mod node;
 pub mod expr;
 pub mod item;
 pub mod token;
-pub mod debug;
 pub mod symbol;
 
 pub use expr::*;
