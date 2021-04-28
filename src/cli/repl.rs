@@ -5,8 +5,8 @@ use rustyline::Editor;
 
 
 use crate::parse;
-use crate::parse::{Parser, RecoveryInfo};
-use crate::ast::debug::AstTermPrinter;
+use crate::parse::{Parser, RecoveryInfo, ReplGrammer};
+use crate::ast_pass::debug::AstTermPrinter;
 
 
 pub struct ReplState{
@@ -24,7 +24,7 @@ impl ReplState{
     pub fn append_line(&mut self, s: &str){
         self.line.push('\n');
         self.line.push_str(s);
-        eprintln!("Buffered {:?}", self.line);
+        // eprintln!("Buffered {:?}", self.line);
     }
     fn clear_line(&mut self){
         self.line.clear()
@@ -57,8 +57,8 @@ pub fn begin_repl(){
 
     loop {
         let linefeed = match repl.collecting{
-            true => "| ",
-            false => ">> ",
+            true =>  "|  ",
+            false => "|> ",
         };
         match rl.readline(linefeed) {
             Ok(line) => {
@@ -67,7 +67,7 @@ pub fn begin_repl(){
                 // read from REPL stored buffer
                 let mut p = Parser::new(repl.as_str(), config.clone());
 
-                let tried_items = parse::parse_repl_line(&mut p);
+                let tried_items = p.expect(ReplGrammer);
                 
                 match tried_items{
                     Ok(items) => {
@@ -79,7 +79,8 @@ pub fn begin_repl(){
                         repl.collect();
                         continue
                     },
-                    _ => {
+                    Err(e) => {
+                        eprintln!("{:?}", e);
                         for err in &p.errors{
                             eprintln!("{}", err)
                         }
@@ -89,8 +90,9 @@ pub fn begin_repl(){
                 repl.reset();
             },
             Err(ReadlineError::Interrupted) => {
-                eprintln!("CTRL-C");
-                break
+                // eprintln!("CTRL-C");
+                // break
+                repl.reset();
             },
             Err(ReadlineError::Eof) => {
                 eprintln!("CTRL-D");

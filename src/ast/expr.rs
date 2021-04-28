@@ -19,7 +19,7 @@ use super::node::NodeId;
 //     pub path: Vec<TokenData<'s>>,
 // }
 
-
+#[derive(Clone, Copy)]
 pub enum MutKind{
     Mutable,
     Const,

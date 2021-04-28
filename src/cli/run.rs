@@ -1,23 +1,24 @@
 
 use std::fs;
 use inkwell::OptimizationLevel;
-use crate::parse;
-use crate::parse::Parser;
+// use crate::parse;
+use crate::parse::{Parser, ModuleGrammer};
 // use crate::codegen::{CodeGenerator};
 use crate::ast_pass::ModulePass;
 use crate::ast_pass::name_resolve::AstNameResolver;
-use crate::codegen::llvm::LlvmBackend;
+use crate::ast_pass::to_llvm::LlvmBackend;
 
 pub fn run_file(filename: &str, ol: OptimizationLevel){
     let src = fs::read_to_string(filename).unwrap();
 
     let mut p = Parser::default(src.as_str());
     
-    let tried_module = parse::parse_module(&mut p);
+    let tried_module = p.expect(ModuleGrammer);
 
     let module = match tried_module{
         Ok(m) => m,
-        Err(_) => return {
+        Err(e) => return {
+            eprintln!("{:?}", e);
             for err in &p.errors{
                 eprintln!("{}", err)
             }

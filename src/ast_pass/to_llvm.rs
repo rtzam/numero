@@ -489,7 +489,7 @@ impl<'a, 'c> FuncBuild<'a, 'c>{
             }
 
             BinaryOp::Assign => unreachable!(),
-            _ => unimplemented!()
+            other_op => unimplemented!("{:?} Not supported yet", other_op)
         }
     }
 

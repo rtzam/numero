@@ -9,13 +9,14 @@ use inkwell::targets::{TargetMachine, Target, FileType, CodeModel, RelocMode, In
 
 
 use crate::cli::NoshEmit;
-use crate::parse;
+// use crate::parse;
 use crate::parse::Parser;
-use crate::ast::debug::AstTermPrinter;
+use crate::parse::ModuleGrammer;
+use crate::ast_pass::debug::AstTermPrinter;
 use crate::ast_pass::ModulePass;
 use crate::ast_pass::name_resolve::AstNameResolver;
 // use crate::codegen::{CodeGenerator};
-use crate::codegen::llvm::LlvmBackend;
+use crate::ast_pass::to_llvm::LlvmBackend;
 
 
 
@@ -26,11 +27,12 @@ pub fn build_file(filename: &str, opt_level: OptimizationLevel, emit: Option<Nos
 
     let mut p = Parser::default(src.as_str());
     
-    let tried_module = parse::parse_module(&mut p);
+    let tried_module = p.expect(ModuleGrammer);
 
     let module = match tried_module{
         Ok(m) => m,
-        Err(_) => return {
+        Err(e) => return {
+            eprintln!("{:?}", e);
             for err in &p.errors{
                 eprintln!("{}", err)
             }

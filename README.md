@@ -7,8 +7,7 @@ This is a hobby project.
 
 ## Current Status
 * Kaleidoscope complete
-  * double only types
-  * functions only
+  * only `f64` type and functions
   * JIT execution and Obj file creation
 
 ```rust
@@ -22,8 +21,8 @@ extern fun cos(x)
 fun let_binding()
     // const variable declarations
     let
-        x := 3.14159265359
-        y := x * 2
+        x = 3.14159265359
+        y = x * 2
     in
         sin(x/2) + cos(y)
     end
@@ -36,8 +35,8 @@ end
 
 // Arguments are constant
 fun cumulative(iters)
-    mut count := 0
-    mut result := 0 
+    val mut count = 0
+    val mut result = 0 
     
     while count < iters
         // use = instead of :=
@@ -51,7 +50,7 @@ end
 
 fun branches(first, second)
     
-    clamped_first := if first < 0
+    val clamped_first = if first < 0
         0
     else if 10 < first 
         10
@@ -59,8 +58,8 @@ fun branches(first, second)
         first
     end
 
-    new_second := do // do-block creates new scope
-        a_temp := clamped_first * second
+    val new_second = do // do-block creates new scope
+        val a_temp = clamped_first * second
         a_temp + cumulative(second)
     end
 
