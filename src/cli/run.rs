@@ -2,8 +2,10 @@
 use std::fs;
 use inkwell::OptimizationLevel;
 // use crate::parse;
+use crate::lex;
 use crate::parse::{Parser, ModuleGrammer};
 // use crate::codegen::{CodeGenerator};
+use crate::ast::Ptr;
 use crate::ast_pass::ModulePass;
 use crate::ast_pass::name_resolve::AstNameResolver;
 use crate::ast_pass::to_llvm::LlvmBackend;
@@ -11,7 +13,16 @@ use crate::ast_pass::to_llvm::LlvmBackend;
 pub fn run_file(filename: &str, ol: OptimizationLevel){
     let src = fs::read_to_string(filename).unwrap();
 
-    let mut p = Parser::default(src.as_str());
+    let token_buffer = lex::scan_source(src.as_str());
+    let tokens = Ptr::new(token_buffer);
+
+    let mut p = match Parser::default(tokens){
+        Some(p) => p,
+        None => {
+            eprintln!("File {} is empty. nothing to do...", filename);
+            return
+        }
+    };
     
     let tried_module = p.expect(ModuleGrammer);
 

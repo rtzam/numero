@@ -3,9 +3,10 @@
 use rustyline::error::ReadlineError;
 use rustyline::Editor;
 
-
+use crate::lex;
 use crate::parse;
 use crate::parse::{Parser, RecoveryInfo, ReplGrammer};
+use crate::ast::Ptr;
 use crate::ast_pass::debug::AstTermPrinter;
 
 
@@ -37,7 +38,7 @@ impl ReplState{
         self.collecting = false;
     }
 
-    pub fn collect(&mut self){
+    pub fn collect_mode(&mut self){
         self.collecting = true;
     }
 }
@@ -65,7 +66,16 @@ pub fn begin_repl(){
                 rl.add_history_entry(line.as_str());
                 repl.append_line(line.as_str());
                 // read from REPL stored buffer
-                let mut p = Parser::new(repl.as_str(), config.clone());
+                let token_buffer = lex::scan_source(repl.as_str());
+                let tokens = Ptr::new(token_buffer);
+                let mut p = match Parser::new(config.clone(), tokens){
+                    Some(p) => p,
+                    None => {
+                        // empty line
+                        repl.reset();
+                        continue
+                    }
+                };
 
                 let tried_items = p.expect(ReplGrammer);
                 
@@ -76,7 +86,7 @@ pub fn begin_repl(){
                         }
                     },
                     Err(RecoveryInfo::EarlyEOF) => {
-                        repl.collect();
+                        repl.collect_mode();
                         continue
                     },
                     Err(e) => {

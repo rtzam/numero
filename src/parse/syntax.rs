@@ -54,17 +54,19 @@ impl<'s> Syntax<'s> for Token{
     
     fn check(&self, p: &Parser<'s>) -> bool{
         match p.peek(){
-            Some(t) => &t == self,
+            Some(td) => &td.kind == self,
             _ => false
         }
     }
 
     fn expect(&self, p: &mut Parser<'s>) -> ParseResult<Self::Parsed>{
-        match p.peek(){
-            Some(t) => if t == *self {
-                Ok(p.shift().unwrap())
+        let current_token = p.peek();
+        match current_token{
+            Some(td) => if td.kind == *self {
+                let final_token = td.clone();
+                p.shift();
+                Ok(final_token)
             } else {
-                let td = p.peek_data().unwrap();
                 let msg = format!("Expected token {:?} But Found {:?} at {:?}", self, td.kind, td.loc);
                 Err(RecoveryInfo::InvalidToken(msg))
             },

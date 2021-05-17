@@ -4,6 +4,8 @@
 // type TokTagRepr = usize;
 // #[derive(Debug, Clone, Copy, PartialEq)]
 // pub struct TokTag(TokTagRepr);
+// mod tok_span;
+// pub use tok_span::{TokenTable, TokenSpan, TokTag};
 
 
 #[derive(Debug, Clone, Copy, PartialEq)]
