@@ -55,7 +55,7 @@ impl<'s> PrinterState<'s>{
     // }
 
     pub fn print_module(&mut self, m: &Module<'s>){
-        eprint!("Module {}", m.decl.span);
+        eprintln!("Module {}", m.decl.span);
         // self.print_place(&m.decl.name);
 
         
@@ -193,7 +193,7 @@ impl<'s> PrinterState<'s>{
         eprintln!("If: ");
         
         self.print_depth();
-        eprint!("cond: ");
+        eprintln!("cond: ");
         self.dive(); 
         self.print_depth();
         self.print_expr(cond);

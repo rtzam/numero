@@ -1,11 +1,10 @@
 
 
 
-use crate::ast::{Expr, ExprKind};
+use crate::ast::{Expr, ExprKind, Ptr};
 use crate::ast::node::NodeId;
 use crate::ast::ops::BinaryOp;
 use crate::ast::token::{TokenData, Token, };
-use crate::lex::{TokenStream, TokTag};
 
 // mod gram;
 mod op_prec;
@@ -15,9 +14,18 @@ pub use syntax::{ModuleGrammer, ReplGrammer};
 
 use syntax::{Syntax,};
 use op_prec::BinOpPrec;
-// pub use gram::{parse_module, parse_repl_line};
 
 pub type SyntaxErrorMsg = String;
+
+
+// pub enum SyntaxError{
+//     InvalidBinaryOp(TokTag),
+//     InvalidUnaryOp(TokTag),
+//     AssignOpMustBeFirstOp(TokTag),
+//     UseOfVarNotVal(TokTag),
+//     NoLineEndAfterLet(TokTag),
+//     KwInvalidStartOfStmt(TokTag),
+// }
 
 // information needed for caller function to recover from
 // parse error
@@ -62,29 +70,31 @@ impl<'s> ParseConfig<'s>{
 
 pub struct Parser<'s>{
     nid: NodeId,
-    current_tag: Option<TokTag>,
-    next_tag: Option<TokTag>,
-    tok_stream: TokenStream<'s>,
+    current_tag: usize,
+    next_tag: usize, // currently unneeded to parse grammer
+    tokens: Ptr<Vec<TokenData<'s>>>,
     config: ParseConfig<'s>,
     pub errors: Vec<SyntaxErrorMsg>,
 }
 
 impl<'s> Parser<'s>{
-    pub fn new(src: &'s str, config: ParseConfig<'s>) -> Self{
+    pub fn new(config: ParseConfig<'s>, tokens: Ptr<Vec<TokenData<'s>>>) -> Option<Self>{
 
-        let mut ts = TokenStream::new(src);
-        Self{
+        let current_tag = find_starting_token_idx(&tokens)?;
+        let next_tag = find_next_token_idx(current_tag, &tokens)?;
+
+        Some(Self{
             nid: NodeId::new(),
-            current_tag: ts.next(),
-            next_tag: ts.next(),
-            tok_stream: ts,
+            current_tag: current_tag,
+            next_tag: next_tag,
+            tokens: tokens,
             config: config,
             errors: Vec::new(),
-        }
+        })
     }
 
-    pub fn default(src: &'s str) -> Self{
-        Self::new(src, ParseConfig::default())
+    pub fn default(tokens: Ptr<Vec<TokenData<'s>>>) -> Option<Self>{
+        Self::new( ParseConfig::default(), tokens)
     }
 
     fn report_error(&mut self, rs: RecoveryInfo, msg: String) -> RecoveryInfo{
@@ -92,55 +102,24 @@ impl<'s> Parser<'s>{
         rs
     }
 
-    fn peek(&self) -> Option<Token>{
-        // let td = self.current_tok?;
-        let td = self.peek_data()?;
-        Some(td.kind)
-    }
-    
-    fn peek_data(&self) -> Option<&TokenData<'s>>{
-        // &self.current_tok
-        self.tok_stream.get_token(self.current_tag?)
+    fn peek(&self) -> Option<&TokenData<'s>>{
+        self.tokens.get(self.current_tag)
     }
 
-    fn copy_current_tok(&mut self) -> Option<TokenData<'s>>{
-        let tok = self.peek_data()?;
-        Some(*tok)
+    // fn peek_next(&mut self) -> Option<&TokenData<'s>>{
+    //     self.tokens.get(self.next_tag)
+    // }
+
+    fn shift(&mut self){
+        let current_idx = self.next_tag;
+
+        self.current_tag = current_idx;
+        self.next_tag = match find_next_token_idx(current_idx, &self.tokens){
+            Some(idx) => idx,
+            None => self.tokens.len() // ensures out of range index so all lookups will return EOF
+        };
     }
 
-    fn peek_next(&mut self) -> Option<&TokenData<'s>>{
-        self.tok_stream.get_token(self.next_tag?)
-    }
-
-    fn shift(&mut self) -> Option<TokenData<'s>>{
-        let temp = self.copy_current_tok();
-        self.current_tag = self.next_tag;
-        self.advance();
-        temp
-    }
-
-    fn advance(&mut self) -> Option<()>{
-        let current_td = *self.peek_next()?;
-
-        loop {
-            self.next_tag = self.tok_stream.next();
-
-            let next_tt = self.next_tag?;
-            let next_td = self.tok_stream.get_token(next_tt)?;
-            // eprintln!("lex: {:?}, {:?}", next_td, next_tt);
-            match (current_td.kind, next_td.kind) {
-                // skip new line
-                // TODO: binary ops only
-                (Token::Sigil, Token::Newline) =>{
-                    continue
-                }
-                _ => {
-                    // eprintln!("lex: {:?}", self.tok_stream.get_current_tok_tag());
-                    break Some(());
-                }
-            }
-        }
-    }
 
     fn get_precedence(&self, bo: BinaryOp) -> i32{
         self.config.op_prec.get_precedence(bo)
@@ -157,7 +136,7 @@ impl<'s> Parser<'s>{
     }
 
     fn peek_op_precedence(&mut self) -> PeekOpPrec{
-        match self.peek_data(){
+        match self.peek(){
             Some(tok) if tok.kind == Token::Sigil || tok.kind == Token::Assigner => 
             {
                 let span = tok.span;
@@ -182,9 +161,8 @@ impl<'s> Parser<'s>{
         s.expect(self)
     }
     fn parse_if_present<S: Syntax<'s>>(&mut self, s: S) -> Option<ParseResult<S::Parsed>>{
-        if s.check(self){
-            let parsed = s.expect(self); 
-            Some(parsed)
+        if s.check(self){ 
+            Some(s.expect(self))
         } else{
             None
         }
@@ -196,4 +174,49 @@ pub enum PeekOpPrec{
     Prec(i32),
     BadOp,
     ExprEnd,
+}
+
+
+fn find_starting_token_idx<'s>(tokens: &Vec<TokenData<'s>>) -> Option<usize>{
+    let mut index = 0;
+
+    loop {
+        let next_td = tokens.get(index)?;
+
+        // eprintln!("lex: {:?}, {:?}", next_td, next_tt);
+        match next_td.kind{
+            // skip new line for multiline expresssions
+            // TODO: binary ops only
+            Token::Newline | Token::Whitespace | Token::EOLComment => {
+                index += 1;
+            },
+            _ => break,
+        }
+    }
+
+    Some(index)
+}
+
+fn find_next_token_idx<'s>(current_idx: usize, tokens: &Vec<TokenData<'s>>) -> Option<usize>{
+    let mut idx_offset = 0;
+    let current_td = tokens.get(current_idx)?;
+
+    loop {
+        idx_offset += 1;
+        let next_td = tokens.get(current_idx + idx_offset)?;
+
+        // eprintln!("lex: {:?}, {:?}", next_td, next_tt);
+        match next_td.kind{
+            // skip new line for multiline expresssions
+            // TODO: binary ops only
+            Token::Newline => match current_td.kind{
+                Token::Sigil | Token::Assigner => continue,
+                _ => break,
+            }
+            Token::Whitespace | Token::EOLComment => continue,
+            _ => break,
+        }
+    }
+
+    Some(current_idx + idx_offset)
 }

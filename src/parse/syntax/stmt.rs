@@ -125,7 +125,7 @@ fn parse_trailing_expr<'s>(p: &mut Parser<'s>, first_lead: Expr<'s>) -> ParseRes
     let mut new_lead = first_lead;
     loop{
         match p.peek(){
-            Some(tok) => match tok{
+            Some(tok) => match tok.kind{
                 Token::OpenParen  => {
                     new_lead = parse_call_expr(p, new_lead)?;
                 },
@@ -145,7 +145,7 @@ impl<'s> Syntax<'s> for PrimaryExpr{
 
     fn check(&self, p: &Parser<'s>) -> bool{
         match p.peek(){
-            Some(t) => match t{
+            Some(td) => match td.kind{
                 Token::OpenParen | 
                 Token::Literal(_) | 
                 Token::Ident
@@ -158,7 +158,7 @@ impl<'s> Syntax<'s> for PrimaryExpr{
 
     fn expect(&self, p: &mut Parser<'s>) -> ParseResult<Self::Parsed>{
         let lead = match p.peek(){
-            Some(tok) => match tok{
+            Some(tok) => match tok.kind{
                 Token::OpenParen    => p.expect(TupleExpr)?,
                 Token::Ident        => p.expect(LocalVar)?, 
                 Token::Literal(_)   => p.expect(LiteralExpr)?,
@@ -197,7 +197,7 @@ fn parse_binary_rhs<'s>(p: &mut Parser<'s>, lhs: Expr<'s>, old_prec: i32) -> Par
     let prec = match p.peek_op_precedence(){
         PeekOpPrec::Prec(prec) => prec,
         PeekOpPrec::BadOp => return {
-            let tok = p.peek_data();
+            let tok = p.peek();
             match tok {
                 Some(td) =>{
                     let msg = format!("unsupported operator {:?}", td.span);
@@ -224,7 +224,7 @@ fn parse_binary_rhs<'s>(p: &mut Parser<'s>, lhs: Expr<'s>, old_prec: i32) -> Par
     let next_prec = match p.peek_op_precedence(){
         PeekOpPrec::Prec(prec) => prec,
         PeekOpPrec::BadOp => return {
-            let tok = p.peek_data();
+            let tok = p.peek();
             match tok {
                 Some(td) =>{
                     let msg = format!("unsupported operator {:?}", td.span);
@@ -321,7 +321,7 @@ impl<'s> Syntax<'s> for VarDeclBody{
 
         let bound = p.expect(Token::Ident)?;
 
-        // optionally parse type
+        // TODO optionally parse type
         
         p.expect(Token::Assigner)?;
 
@@ -419,7 +419,7 @@ impl<'s> Syntax<'s> for Expression{
 
     fn check(&self, p: &Parser<'s>) -> bool{
         match p.peek(){
-            Some(tok) => match tok {
+            Some(tok) => match tok.kind {
                 Token::Kw(kw) => match kw{
                     KwKind::If  | 
                     KwKind::Let | 
@@ -434,7 +434,7 @@ impl<'s> Syntax<'s> for Expression{
 
     fn expect(&self, p: &mut Parser<'s>) -> ParseResult<Self::Parsed>{
         match p.peek(){
-            Some(tok) => match tok {
+            Some(tok) => match tok.kind {
                 Token::Kw(kw) => match kw{
                     KwKind::If  => p.expect(IfExpr),
                     KwKind::Let => p.expect(LetExpr),
@@ -486,7 +486,7 @@ impl<'s> Syntax<'s> for Statement{
 
     fn check(&self, p: &Parser<'s>) -> bool{
         match p.peek(){
-            Some(tok) => match tok {
+            Some(tok) => match tok.kind {
                 Token::Kw(kw) => match kw{
                     KwKind::If  |
                     KwKind::Let |
@@ -503,7 +503,7 @@ impl<'s> Syntax<'s> for Statement{
 
     fn expect(&self, p: &mut Parser<'s>) -> ParseResult<Self::Parsed>{
         match p.peek(){
-            Some(tok) => match tok {
+            Some(tok) => match tok.kind {
                 Token::Kw(kw) => match kw{
                     KwKind::If  => p.expect(IfExpr),
                     KwKind::Let => p.expect(LetExpr),

@@ -10,8 +10,10 @@ use inkwell::targets::{TargetMachine, Target, FileType, CodeModel, RelocMode, In
 
 use crate::cli::NoshEmit;
 // use crate::parse;
+use crate::lex;
 use crate::parse::Parser;
 use crate::parse::ModuleGrammer;
+use crate::ast::Ptr;
 use crate::ast_pass::debug::AstTermPrinter;
 use crate::ast_pass::ModulePass;
 use crate::ast_pass::name_resolve::AstNameResolver;
@@ -25,7 +27,16 @@ pub fn build_file(filename: &str, opt_level: OptimizationLevel, emit: Option<Nos
     let path = Path::new(filename);
     let src = fs::read_to_string(&path).unwrap();
 
-    let mut p = Parser::default(src.as_str());
+    let token_buffer = lex::scan_source(src.as_str());
+    let tokens = Ptr::new(token_buffer);
+
+    let mut p = match Parser::default(tokens){
+        Some(parser) => parser,
+        None => {
+            eprintln!("File {} is empty, nothing to do...", filename);
+            return
+        }
+    };
     
     let tried_module = p.expect(ModuleGrammer);
 
