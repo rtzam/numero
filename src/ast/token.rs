@@ -8,11 +8,11 @@
 // pub use tok_span::{TokenTable, TokenSpan, TokTag};
 
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum LineEndKind{
-    Newline,  
-    SemiColon,
-}
+// #[derive(Debug, Clone, Copy, PartialEq)]
+// pub enum LineEndKind{
+//     Newline,  
+//     SemiColon,
+// }
 
 #[derive(Debug, Clone, Copy,PartialEq)]
 pub enum LitKind{
@@ -52,6 +52,53 @@ pub enum KwKind{
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+pub enum ReservedKind{
+    This,
+    KwSelf,
+    Enum,
+    Struct,
+    Class,
+    Rec,
+    Data,
+    Type,
+    Alias,
+    Use, Using, As,
+    Pub,
+    FromKw, Import, Export, Exposing,
+    Async, Await,
+    For, In, Loop,
+    Match, Case, Switch,
+    And, Or, Xor,
+    Ref,
+    Var,
+    Const,
+    Global,
+    Local,
+    New, Del, Delete,
+    Assert,
+    Defer,
+    Move,
+    Go,
+    Try, Catch,
+    Break, Continue,
+    GoTo,
+    Impl,
+    Fn, Def,
+    Return, Yield, Throw, Raise, 
+    Static,
+    Trait,
+    Super,
+    Unsafe,
+    Where,
+    Final,
+    Virtual, Override,
+    Except,
+    Dyn,
+    Bit,
+    Flag,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Token{
     // EOF,
     EOLComment,
@@ -85,6 +132,7 @@ pub enum Token{
     // UnclosedChar,
     // UnclosedStr,
     UnknownChunk,
+    Reserved(ReservedKind)
 }
 
 
@@ -108,8 +156,8 @@ impl<'s> TokenData<'s>{
 
 #[derive(Clone, Copy, Debug)]
 pub struct TokenLoc{
-    pub line: usize,
-    pub column: usize,
+    pub line: u32,
+    pub column: u32,
 }
 
 impl TokenLoc{

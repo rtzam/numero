@@ -22,6 +22,6 @@ inkwell = { git = "https://github.com/TheDan64/inkwell", branch = "master", feat
 clap = "^2" # CLI
 unicode-xid = "0.2.1" # lexer
 rustyline = "7.1.0" # REPL
-# lazy_static = "1.4.0" # Const value opt
+lazy_static = "1.4.0" # Const value opt
 # logos = "0.11.4" # lexer
 # bimap = "0.6.0" # For symbol table

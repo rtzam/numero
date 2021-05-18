@@ -175,9 +175,9 @@ impl<'s> Syntax<'s> for PrimaryExpr{
 }
 
 
-
-struct BinaryExpr;
-impl<'s> Syntax<'s> for BinaryExpr{
+// Traditional Binary Expr (1+2) without trailing-if-clause
+struct PlainBinaryExpr;
+impl<'s> Syntax<'s> for PlainBinaryExpr{
     type Parsed = Expr<'s>;
 
     fn check(&self, p: &Parser<'s>) -> bool{
@@ -266,11 +266,54 @@ fn parse_binary_op<'s>(p: &mut Parser<'s>) -> ParseResult<BinaryOp>{
 
 
 
+
+// Python style trailing If syntax
+// this is a clause on a BinaryExpr, not a PimaryExpr
+// mutually-recursive nature allows for parsing nested-if-clause
+fn parse_trailing_if_expr<'s>(p: &mut Parser<'s>, if_body: Expr<'s>) -> ParseResult<Expr<'s>>{
+    p.expect(Token::Kw(KwKind::If))?;
+    let cond = p.expect(BinaryExpr)?;
+    
+    p.expect(Token::Kw(KwKind::Else))?;
+    let else_body = p.expect(BinaryExpr)?;
+
+    Ok(p.new_expr(ExprKind::If{cond, if_body, else_body}))
+}
+
+
+struct BinaryExpr;
+impl<'s> Syntax<'s> for BinaryExpr{
+    type Parsed = Expr<'s>;
+    fn check(&self, p: &Parser<'s>) -> bool{
+        p.check(PlainBinaryExpr)
+    }
+
+    fn expect(&self, p: &mut Parser<'s>) -> ParseResult<Self::Parsed>{
+        let mut new_lead = p.expect(PlainBinaryExpr)?;
+        loop{
+            match p.peek(){
+                Some(tok) => match tok.kind{
+                    // Token::OpenParen  => {
+                    //     new_lead = parse_call_expr(p, new_lead)?;
+                    // },
+                    Token::Kw(KwKind::If) => {
+                        new_lead = parse_trailing_if_expr(p, new_lead)?;
+                    }
+                    _ => return Ok(new_lead),
+                }
+                _ => return Ok(new_lead),
+            }
+        }
+    }
+}
+
+
+
 struct IfExpr;
 impl<'s> Syntax<'s> for IfExpr{
     type Parsed = Expr<'s>;
     fn check(&self, p: &Parser<'s>) -> bool{
-        p.check(PairOf(Token::Kw(KwKind::If), LineOf(PrimaryExpr)))
+        p.check(PairOf(Token::Kw(KwKind::If), LineOf(BinaryExpr)))
     }
 
     fn expect(&self, p: &mut Parser<'s>) -> ParseResult<Self::Parsed>{
@@ -454,7 +497,7 @@ struct WhileStmt;
 impl<'s> Syntax<'s> for WhileStmt{
     type Parsed = Expr<'s>;
     fn check(&self, p: &Parser<'s>) -> bool{
-        p.check(PairOf(Token::Kw(KwKind::While), LineOf(PrimaryExpr)))
+        p.check(PairOf(Token::Kw(KwKind::While), LineOf(BinaryExpr)))
     }
 
     fn expect(&self, p: &mut Parser<'s>) -> ParseResult<Self::Parsed>{

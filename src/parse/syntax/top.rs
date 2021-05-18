@@ -1,5 +1,6 @@
 use super::{Syntax};
 use super::comb::{
+    AnyOf,
     EitherOf, Either,
     LineOf, LinesOf, DelimitedListOf, 
 };
@@ -7,7 +8,7 @@ use super::delim::{ParenDelim, };
 
 use crate::parse::{Parser, ParseResult};
 
-use crate::ast::token::{Token, KwKind, TokenData};
+use crate::ast::token::{Token, KwKind, TokenData, ReservedKind};
 use crate::ast;
 
 use super::stmt::{StmtBlock, Statement};
@@ -32,17 +33,37 @@ impl<'s> Syntax<'s> for FuncProto{
     type Parsed = ast::FuncProto<'s>;
 
     fn check(&self, p: &Parser<'s>) -> bool{
-        p.check(Token::Kw(KwKind::Fun))
+        p.check(AnyOf(
+            &[
+                Token::Kw(KwKind::Fun),
+                Token::Reserved(ReservedKind::Def),
+                Token::Reserved(ReservedKind::Fn),
+            ]
+        ))
     }
 
     fn expect(&self, p: &mut Parser<'s>) -> ParseResult<Self::Parsed>{
-        p.expect(Token::Kw(KwKind::Fun))?;
-
+        let starting_tokens = AnyOf(
+            &[
+                Token::Kw(KwKind::Fun),
+                Token::Reserved(ReservedKind::Def),
+                Token::Reserved(ReservedKind::Fn),
+            ]
+        );
+        let td = p.expect(starting_tokens)?;
         let name = p.expect(Token::Ident)?;
 
         let args = p.expect(
            DelimitedListOf(ParenDelim, FuncArg) 
         )?;
+
+        match td.kind{
+            Token::Kw(KwKind::Fun) => (),
+            Token::Reserved(ReservedKind::Def) | Token::Reserved(ReservedKind::Fn) => {
+                unimplemented!("Use of bad keyword to start function")
+            }
+            _ => unreachable!("Parsed function without acceptable function-start keyword"),
+        }
 
         Ok(ast::FuncProto{name:name, args: args})
     }
