@@ -31,7 +31,7 @@ fn process_token_kw<'s>(tok: TokenData<'s>) -> TokenData<'s>{
 }
 
 lazy_static!{
-    static ref _TOKEN_KW_LIST: [(&'static str, Token); 76] = [        
+    static ref _TOKEN_KW_LIST: [(&'static str, Token); 75] = [        
         ("fun"      , Token::Kw(KwKind::Fun)),
         ("extern"   , Token::Kw(KwKind::Extern)),
         ("end"      , Token::Kw(KwKind::End)),
@@ -67,7 +67,6 @@ lazy_static!{
         ("async"    , Token::Reserved(ReservedKind::Async)),
         ("await"    , Token::Reserved(ReservedKind::Await)),
         ("for"      , Token::Reserved(ReservedKind::For)),
-        ("in"       , Token::Reserved(ReservedKind::In)),
         ("match"    , Token::Reserved(ReservedKind::Match)),
         ("case"     , Token::Reserved(ReservedKind::Case)),
         ("switch"   , Token::Reserved(ReservedKind::Switch)),

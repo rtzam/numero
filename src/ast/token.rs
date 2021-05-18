@@ -66,7 +66,7 @@ pub enum ReservedKind{
     Pub,
     FromKw, Import, Export, Exposing,
     Async, Await,
-    For, In, Loop,
+    For, Loop,
     Match, Case, Switch,
     And, Or, Xor,
     Ref,
