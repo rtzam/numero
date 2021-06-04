@@ -45,7 +45,7 @@ impl ReplState{
 
 
 pub fn begin_repl(){
-    eprintln!("Nosh REPL");
+    eprintln!("Nosh {}", env!("CARGO_PKG_VERSION"));
     
     let mut rl = Editor::<()>::new();
     // if rl.load_history("history.txt").is_err() {
