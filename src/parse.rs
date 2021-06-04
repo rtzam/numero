@@ -71,7 +71,7 @@ impl<'s> ParseConfig<'s>{
 pub struct Parser<'s>{
     nid: NodeId,
     current_tag: usize,
-    next_tag: usize, // currently unneeded to parse grammer
+    // next_tag: usize, // currently unneeded to parse grammer
     tokens: Ptr<Vec<TokenData<'s>>>,
     config: ParseConfig<'s>,
     pub errors: Vec<SyntaxErrorMsg>,
@@ -81,12 +81,12 @@ impl<'s> Parser<'s>{
     pub fn new(config: ParseConfig<'s>, tokens: Ptr<Vec<TokenData<'s>>>) -> Option<Self>{
 
         let current_tag = find_starting_token_idx(&tokens)?;
-        let next_tag = find_next_token_idx(current_tag, &tokens)?;
+        // let next_tag = find_next_token_idx(current_tag, &tokens)?;
 
         Some(Self{
             nid: NodeId::new(),
             current_tag: current_tag,
-            next_tag: next_tag,
+            // next_tag: next_tag,
             tokens: tokens,
             config: config,
             errors: Vec::new(),
@@ -111,13 +111,20 @@ impl<'s> Parser<'s>{
     // }
 
     fn shift(&mut self){
-        let current_idx = self.next_tag;
+        // let current_idx = self.next_tag;
 
-        self.current_tag = current_idx;
-        self.next_tag = match find_next_token_idx(current_idx, &self.tokens){
+        // self.current_tag = current_idx;
+        // self.next_tag = match find_next_token_idx(current_idx, &self.tokens){
+        //     Some(idx) => idx,
+        //     None => self.tokens.len() // ensures out of range index so all lookups will return EOF
+        // };
+
+        let next_idx = match find_next_token_idx(self.current_tag, &self.tokens){
             Some(idx) => idx,
             None => self.tokens.len() // ensures out of range index so all lookups will return EOF
         };
+
+        self.current_tag = next_idx;
     }
 
 

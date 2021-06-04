@@ -401,11 +401,11 @@ impl<'s> Syntax<'s> for LetExpr{
     type Parsed = Expr<'s>;
 
     fn check(&self, p: &Parser<'s>) -> bool{
-        p.check(LineOf(Token::Kw(KwKind::Let)))
+        p.check(Token::Kw(KwKind::Let))
     }
 
     fn expect(&self, p: &mut Parser<'s>) -> ParseResult<Self::Parsed>{
-        p.expect(LineOf(Token::Kw(KwKind::Let)))?;
+        p.expect(Token::Kw(KwKind::Let))?;
 
         let binding_parts = p.expect(LinesOf(VarDeclBody))?;
 
