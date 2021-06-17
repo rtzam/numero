@@ -1,14 +1,12 @@
 # Nosh
 
-A programming language to practice compiler development
+A programming language to experiment with compiler development
 
-### __Warning__
-This is a hobby project.
 
 ## Current Status
 * Kaleidoscope complete
   * only `f64` type and functions
-  * JIT execution and Obj file creation
+  * JIT execution, Obj file creation
 
 ```rust
 mod module_name
@@ -63,16 +61,20 @@ fun branches(first, second)
         a_temp + cumulative(second)
     end
 
+    // ternary operator
+    val const_term = 1.5 if first < second else 0
+
     // multiline expressions when
     // line ends with a binary op
-    1.5 + 
-        clamed_first + new_second
+    const_term + 
+        clamed_first + 
+        new_second
 end
 ```
 
 
 ## Future Direction
-* Actually handle errors
+* Parser error recovery
 * support basic types
   * i64, char, Nil
 * Type inference
