@@ -1,3 +1,6 @@
+
+use std::io::stdout;
+
 use nosh::cli;
 use nosh::cli::build;
 use nosh::cli::repl;
@@ -28,6 +31,15 @@ fn main() {
             run::run_file(filename, opt_level)
         }
         ("check", Some(_subm)) => unimplemented!("No Checking yet..."),
+        ("shell", Some(subm)) => {
+            use clap::Shell;
+            use std::str::FromStr;
+            let shell_str = subm.value_of("shell").unwrap();
+            let for_shell = Shell::from_str(shell_str).unwrap();
+            let mut cmd = cli::make_cli();
+
+            cmd.gen_completions_to(env!("CARGO_BIN_NAME"), for_shell, &mut stdout());
+        },
         _ => unreachable!(),
     }
 }

@@ -4,7 +4,7 @@ pub mod run;
 
 use inkwell::OptimizationLevel;
 
-use clap::{App, AppSettings, Arg, SubCommand};
+use clap::{App, AppSettings, Arg, SubCommand, Shell};
 
 pub fn int_to_opt_level(level: u8) -> OptimizationLevel {
     match level {
@@ -54,6 +54,14 @@ impl<'a, 'b> BuildFileCli<'a, 'b> for App<'a, 'b> {
     }
 }
 
+fn make_shell_completion_subcommand<'a,'b>() -> App<'a,'b>{
+    SubCommand::with_name("shell")
+        .arg(
+            Arg::with_name("shell")
+            .required(true)
+            .possible_values(&Shell::variants()))
+}
+
 pub fn make_cli<'a, 'b>() -> App<'a, 'b> {
     App::new("The Nosh Compiler")
         .version(env!("CARGO_PKG_VERSION"))
@@ -84,4 +92,5 @@ pub fn make_cli<'a, 'b>() -> App<'a, 'b> {
                 .append_build_file_args(),
         )
         .subcommand(SubCommand::with_name("check"))
+        .subcommand(make_shell_completion_subcommand())
 }
