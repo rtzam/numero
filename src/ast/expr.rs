@@ -1,7 +1,7 @@
-use super::Ptr;
-use super::ops::{BinaryOp};
-use super::token::{TokenData};
 use super::node::NodeId;
+use super::ops::BinaryOp;
+use super::token::TokenData;
+use super::Ptr;
 
 // pub enum LitKind{
 //     Str,
@@ -20,20 +20,20 @@ use super::node::NodeId;
 // }
 
 #[derive(Clone, Copy)]
-pub enum MutKind{
+pub enum MutKind {
     Mutable,
     Const,
 }
 
-pub struct VarDecl<'s>{
+pub struct VarDecl<'s> {
     pub mutable: MutKind,
-    pub bound: TokenData<'s>, 
+    pub bound: TokenData<'s>,
     pub value: Expr<'s>,
 }
 
-impl<'s> VarDecl<'s>{
-    pub fn new(m: MutKind, b: TokenData<'s>, val: Expr<'s>) -> Self{
-        Self{
+impl<'s> VarDecl<'s> {
+    pub fn new(m: MutKind, b: TokenData<'s>, val: Expr<'s>) -> Self {
+        Self {
             mutable: m,
             bound: b,
             value: val,
@@ -46,29 +46,46 @@ impl<'s> VarDecl<'s>{
 //     Break,
 // }
 
-pub enum ExprKind<'s>{
+pub enum ExprKind<'s> {
     // Place(Place<'s>),
     Var(TokenData<'s>),
     Lit(f64),
-    Binary{op: BinaryOp, lhs: Expr<'s>, rhs: Expr<'s>},
-    Call{callee: Expr<'s>, args: Vec<Expr<'s>>},
-    If{cond: Expr<'s>, if_body: Expr<'s>, else_body: Expr<'s>},
+    Binary {
+        op: BinaryOp,
+        lhs: Expr<'s>,
+        rhs: Expr<'s>,
+    },
+    Call {
+        callee: Expr<'s>,
+        args: Vec<Expr<'s>>,
+    },
+    If {
+        cond: Expr<'s>,
+        if_body: Expr<'s>,
+        else_body: Expr<'s>,
+    },
     Block(Vec<Expr<'s>>),
     Decl(VarDecl<'s>),
-    Let{bound: Vec<Expr<'s>>, let_body: Expr<'s>},
-    While{cond: Expr<'s>, while_body: Expr<'s>},
+    Let {
+        bound: Vec<Expr<'s>>,
+        let_body: Expr<'s>,
+    },
+    While {
+        cond: Expr<'s>,
+        while_body: Expr<'s>,
+    },
 }
 
-pub struct Expr<'s>{
+pub struct Expr<'s> {
     pub kind: Ptr<ExprKind<'s>>,
     pub nid: NodeId,
 }
 
-impl<'s> Expr<'s>{
-    pub fn new(nid: NodeId, ek: ExprKind<'s>) -> Self{
-        Expr{
+impl<'s> Expr<'s> {
+    pub fn new(nid: NodeId, ek: ExprKind<'s>) -> Self {
+        Expr {
             kind: Ptr::new(ek),
-            nid: nid,
+            nid,
         }
     }
 }

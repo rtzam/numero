@@ -17,7 +17,7 @@ path = "src/bin/noshc.rs"
 
 [dependencies]
 # llvm deps
-inkwell = { git = "https://github.com/TheDan64/inkwell", branch = "master", features = ["llvm11-0"] }
+inkwell = { git = "https://github.com/TheDan64/inkwell", branch = "master", features = ["llvm12-0"] }   
 # CLI for noshc binary only
 clap = "^2" # CLI
 unicode-xid = "0.2.1" # lexer

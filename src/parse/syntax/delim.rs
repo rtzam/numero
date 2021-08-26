@@ -1,6 +1,5 @@
-
-use crate::ast::token::{Token};
-use super::{Delimiter};
+use super::Delimiter;
+use crate::ast::token::Token;
 
 macro_rules! delimiter_pair {
     ($(($v:vis struct $name:ident, $open_kind:path, $close_kind:path),)*) => {
@@ -21,8 +20,6 @@ macro_rules! delimiter_pair {
     };
 }
 
-delimiter_pair!{
+delimiter_pair! {
     (pub struct ParenDelim, Token::OpenParen, Token::ClosedParen),
 }
-
-
