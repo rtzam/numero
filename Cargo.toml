@@ -12,13 +12,13 @@ path = "src/lib.rs"
 
 # binary to run lib
 [[bin]]
-name = "noshc"
-path = "src/bin/noshc.rs"
+name = "nosh"
+path = "src/bin/nosh.rs"
 
 [dependencies]
 # llvm deps
 inkwell = { git = "https://github.com/TheDan64/inkwell", branch = "master", features = ["llvm12-0"] }   
-# CLI for noshc binary only
+# CLI for nosh binary only
 clap = "^2" # CLI
 unicode-xid = "0.2.1" # lexer
 rustyline = "7.1.0" # REPL
